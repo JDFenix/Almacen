@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build
+RUN npx vite build
 
 # Usamos Nginx para servir el front (es lo más ligero para tus 3GB de RAM)
 FROM nginx:alpine

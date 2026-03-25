@@ -2,42 +2,14 @@ import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
 import plugin from '@vitejs/plugin-react';
-import fs from 'fs';
-import path from 'path';
-import child_process from 'child_process';
 import { env } from 'process';
 
-const baseFolder =
-    env.APPDATA !== undefined && env.APPDATA !== ''
-        ? `${env.APPDATA}/ASP.NET/https`
-        : `${env.HOME}/.aspnet/https`;
+// URL del backend en desarrollo (fuera de Docker)
+// Puedes sobreescribirla con VITE_DEV_API_URL si lo necesitas.
+const devApiTarget =
+    env.VITE_DEV_API_URL ??
+    (env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'http://localhost:5190');
 
-const certificateName = "almacenaifa.client";
-const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
-const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
-
-if (!fs.existsSync(baseFolder)) {
-    fs.mkdirSync(baseFolder, { recursive: true });
-}
-
-if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
-    if (0 !== child_process.spawnSync('dotnet', [
-        'dev-certs',
-        'https',
-        '--export-path',
-        certFilePath,
-        '--format',
-        'Pem',
-        '--no-password',
-    ], { stdio: 'inherit', }).status) {
-        throw new Error("Could not create certificate.");
-    }
-}
-
-const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
-    env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'http://localhost:5190';
-
-// https://vitejs.dev/config/
 export default defineConfig({
     plugins: [plugin()],
     resolve: {
@@ -48,10 +20,18 @@ export default defineConfig({
     server: {
         proxy: {
             '^/api': {
-                target:"http://api-almacen:8000",
-                secure: false
+                target: devApiTarget,
+                secure: false,
+                changeOrigin: true
+            },
+            // Proxy también para el endpoint de ejemplo weatherforecast del backend
+            '^/weatherforecast': {
+                target: devApiTarget,
+                secure: false,
+                changeOrigin: true
             }
         },
-       port:5173
+        // Puerto estándar de Vite (fijo) para evitar conflictos con launch.json
+        port: 5173
     }
 })
