@@ -47,12 +47,11 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/weatherforecast': {
-                target,
+            '^/api': {
+                target:"http://api-almacen:8000",
                 secure: false
             }
         },
-        port: parseInt(env.DEV_SERVER_PORT || '50262'),
-       
+       port:5173
     }
 })
