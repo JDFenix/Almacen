@@ -1,13 +1,13 @@
 ﻿services:
   # --- BASE DE DATOS ---
   db-mysql:
-    image: mysql:8.0
+      # Cambiamos MySQL 8 por MariaDB 10.5 (es más ligera y compatible con CPUs viejas)
+    image: mariadb:10.5 
     environment:
       - MYSQL_DATABASE=almacen_aifa
       - MYSQL_ROOT_PASSWORD=root_password
     ports:
       - "3306:3306"
-    command: --default-authentication-plugin=mysql_native_password
 
   # --- BACKEND (.NET) ---
   api-almacen:
@@ -18,7 +18,9 @@
       - "5000:8080"
     depends_on:
       - db-mysql
+    restart: always
     environment:
+      # La cadena de conexión sigue siendo igual, MariaDB es compatible con el driver de MySQL
       - ConnectionStrings__DefaultConnection=Server=db-mysql;Database=almacen_aifa;Uid=root;Pwd=root_password;
 
   # --- FRONTEND (Vite/React) ---
@@ -30,3 +32,7 @@
       - "80:80" # Verás tu web entrando a la IP de la PC (sin puerto)
     depends_on:
       - api-almacen
+
+
+
+
