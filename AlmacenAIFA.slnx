@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="almacenaifa.client/almacenaifa.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="AlmacenAIFA.Server/AlmacenAIFA.Server.csproj" />
+</Solution>
